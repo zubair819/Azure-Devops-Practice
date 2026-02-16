@@ -45,17 +45,11 @@ stages:
         goals: 'clean package -pl webapp -am'
         javaHomeOption: 'Path'
         jdkDirectory: '/usr/lib/jvm/java-11-openjdk-amd64'
-      
+
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: 'webapp/target'
         artifactName: 'drop'
-    - task: AzureWebApp@1
-      inputs:
-        azureSubscription: 'azure-service-connection'
-        appName: 'my-java-app-demo'
-        resourceGroupName: 'rg-devops-demo'
-        package: '$(Pipeline.Workspace)/drop/*.war'
 
 - stage: Deploy
   displayName: Deploy Stage
@@ -67,6 +61,7 @@ stages:
       runOnce:
         deploy:
           steps:
+
           - task: DownloadBuildArtifacts@0
             inputs:
               buildType: 'current'
@@ -74,8 +69,14 @@ stages:
               artifactName: 'drop'
               downloadPath: '$(Pipeline.Workspace)'
 
+          - script: |
+              echo "Downloaded artifact contents:"
+              ls -R $(Pipeline.Workspace)
+            displayName: "Verify artifact"
+
           - task: AzureWebApp@1
             inputs:
               azureSubscription: 'azure-service-connection'
               appName: 'my-java-app-demo'
-              package: '$(Pipeline.Workspace)/drop/*.war'
+              resourceGroupName: 'rg-devops-demo'
+              package: '$(Pipeline.Workspace)/drop/webapp/target/*.war'
