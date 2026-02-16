@@ -54,6 +54,7 @@ stages:
       inputs:
         azureSubscription: 'azure-service-connection'
         appName: 'my-java-app-demo'
+        resourceGroupName: 'rg-devops-demo'
         package: '$(Pipeline.Workspace)/drop/*.war'
 
 - stage: Deploy
