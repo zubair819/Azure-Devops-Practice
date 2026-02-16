@@ -42,7 +42,7 @@ stages:
     - task: Maven@3
       inputs:
         mavenPomFile: 'pom.xml'
-        goals: 'package'
+        goals: 'clean package'
         javaHomeOption: 'Path'
         jdkDirectory: '/usr/lib/jvm/java-11-openjdk-amd64'
 
