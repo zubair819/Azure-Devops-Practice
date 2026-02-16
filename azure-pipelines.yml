@@ -2,7 +2,7 @@ trigger:
 - master
 
 pool:
-  name: local-agent-pool
+  name: Local-agent-pool
 
 stages:
 
