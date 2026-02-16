@@ -78,4 +78,4 @@ stages:
             inputs:
               azureSubscription: 'azure-service-connection'
               appName: 'my-java-app-demo'
-              package: '$(Pipeline.Workspace)/drop/*.jar'
+              package: '$(Pipeline.Workspace)/drop/*.war'
