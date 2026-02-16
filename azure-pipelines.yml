@@ -1,22 +1,75 @@
-# Maven
-# Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
 trigger:
 - master
 
 pool:
-  name: Local-agent-pool
+  name: local-agent-pool
 
-steps:
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'Path'
-    jdkDirectory: '/usr/lib/jvm/java-11-openjdk-amd64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
+stages:
 
+- stage: Build
+  displayName: Build Stage
+  jobs:
+  - job: BuildJob
+    steps:
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'compile'
+        javaHomeOption: 'Path'
+        jdkDirectory: '/usr/lib/jvm/java-11-openjdk-amd64'
+
+- stage: Test
+  displayName: Test Stage
+  dependsOn: Build
+  jobs:
+  - job: TestJob
+    steps:
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'test'
+        javaHomeOption: 'Path'
+        jdkDirectory: '/usr/lib/jvm/java-11-openjdk-amd64'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+
+- stage: Package
+  displayName: Package Stage
+  dependsOn: Test
+  jobs:
+  - job: PackageJob
+    steps:
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'package'
+        javaHomeOption: 'Path'
+        jdkDirectory: '/usr/lib/jvm/java-11-openjdk-amd64'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(System.DefaultWorkingDirectory)/target'
+        artifactName: 'drop'
+
+- stage: Deploy
+  displayName: Deploy Stage
+  dependsOn: Package
+  jobs:
+  - deployment: DeployWeb
+    environment: production
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(Pipeline.Workspace)'
+
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: 'azure-service-connection'
+              appName: 'my-java-app-demo'
+              package: '$(Pipeline.Workspace)/drop/*.jar'
