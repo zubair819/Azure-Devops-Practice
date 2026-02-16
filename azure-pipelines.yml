@@ -45,18 +45,16 @@ stages:
         goals: 'clean package'
         javaHomeOption: 'Path'
         jdkDirectory: '/usr/lib/jvm/java-11-openjdk-amd64'
-    - script: |
-        echo "Listing workspace:"
-        pwd
-        ls -la
-        echo "Listing target:"
-        ls -la target || echo "target folder not found"
-      displayName: "Debug workspace"
       
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(System.DefaultWorkingDirectory)/target'
+        pathToPublish: 'webapp/target'
         artifactName: 'drop'
+    - task: AzureWebApp@1
+      inputs:
+        azureSubscription: 'azure-service-connection'
+        appName: 'my-java-app-demo'
+        package: '$(Pipeline.Workspace)/drop/*.war'
 
 - stage: Deploy
   displayName: Deploy Stage
