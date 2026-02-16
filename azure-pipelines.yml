@@ -62,21 +62,14 @@ stages:
         deploy:
           steps:
 
-          - task: DownloadBuildArtifacts@0
-            inputs:
-              buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'drop'
-              downloadPath: '$(Pipeline.Workspace)'
-
           - script: |
-              echo "Downloaded artifact contents:"
-              ls -R $(Pipeline.Workspace)
-            displayName: "Verify artifact"
+              echo "Verifying WAR file..."
+              ls -la $(System.DefaultWorkingDirectory)/webapp/target
+            displayName: "Verify WAR exists"
 
           - task: AzureWebApp@1
             inputs:
               azureSubscription: 'azure-service-connection'
               appName: 'my-java-app-demo'
               resourceGroupName: 'rg-devops-demo'
-              package: '$(Pipeline.Workspace)/drop/webapp/target/*.war'
+              package: '$(System.DefaultWorkingDirectory)/webapp/target/*.war'
