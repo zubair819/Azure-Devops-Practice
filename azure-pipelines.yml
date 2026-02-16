@@ -45,7 +45,14 @@ stages:
         goals: 'clean package'
         javaHomeOption: 'Path'
         jdkDirectory: '/usr/lib/jvm/java-11-openjdk-amd64'
-
+    - script: |
+        echo "Listing workspace:"
+        pwd
+        ls -la
+        echo "Listing target:"
+        ls -la target || echo "target folder not found"
+      displayName: "Debug workspace"
+      
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: '$(System.DefaultWorkingDirectory)/target'
