@@ -62,14 +62,24 @@ stages:
         deploy:
           steps:
 
-          - script: |
-              echo "Verifying WAR file..."
-              ls -la $(System.DefaultWorkingDirectory)/webapp/target
-            displayName: "Verify WAR exists"
+         # Download artifact created in Package stage
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(Pipeline.Workspace)'
 
+          # Optional debug step (helps verify artifact exists)
+          - script: |
+              echo "Downloaded artifact contents:"
+              ls -R $(Pipeline.Workspace)/drop
+            displayName: "Verify artifact"
+
+          # Deploy WAR to Azure App Service
           - task: AzureWebApp@1
             inputs:
               azureSubscription: 'azure-service-connection'
               appName: 'my-java-app-demo'
               resourceGroupName: 'rg-devops-demo'
-              package: '$(System.DefaultWorkingDirectory)/webapp/target/*.war'
+              package: '$(Pipeline.Workspace)/drop/*.war'
